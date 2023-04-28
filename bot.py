@@ -1,9 +1,10 @@
 import os
-import praw
-import sentry_sdk
 import random
 import re
+import sys
 
+import praw
+import sentry_sdk
 from praw import models
 from dotenv import load_dotenv
 
@@ -29,16 +30,13 @@ REPLY_QUOTES = [
 
 load_dotenv()
 
-ua = os.getenv("USER_AGENT")
-bot_id = os.getenv("CLIENT_BOT_ID")
-
 
 def run_bot():
     reddit = praw.Reddit(
         client_id=os.getenv("CLIENT_ID"),
         client_secret=os.getenv("CLIENT_SECRET"),
         password=os.getenv("CLIENT_PASSWORD"),
-        user_agent=ua,
+        user_agent=os.getenv("USER_AGENT"),
         username=os.getenv("CLIENT_USERNAME"),
     )
     subreddit = reddit.subreddit(monitored_subreddits())
@@ -73,7 +71,7 @@ def is_bot_reply(comment: models.Comment) -> bool:
 
 
 def is_bot_comment(comment: models.Comment) -> bool:
-    return comment.author.id == bot_id
+    return comment.author.id == os.getenv("CLIENT_BOT_ID")
 
 
 def is_hello_comment(comment: models.Comment) -> bool:
@@ -125,6 +123,10 @@ def debug_print(msg: str):
 
 
 if __name__ == "__main__":
-    ensure_env_vars_present(REQUIRED_ENV_VARS)
-    setup_sentry()
-    run_bot()
+    try:
+        ensure_env_vars_present(REQUIRED_ENV_VARS)
+        setup_sentry()
+        run_bot()
+    except KeyboardInterrupt:
+        print("\nInterrupted - shutting down")
+        sys.exit(130)
