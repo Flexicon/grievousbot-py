@@ -123,6 +123,7 @@ def debug_print(msg: str):
     if os.getenv("DEBUG") == "true":
         print(f"[DEBUG] {msg}")
 
+print("test log")
 
 if __name__ == "__main__":
     try:
