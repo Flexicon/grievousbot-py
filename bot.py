@@ -21,10 +21,9 @@ def run_bot():
         user_agent=ua,
         username=os.getenv("CLIENT_USERNAME"),
     )
+    subreddit = reddit.subreddit(monitored_subreddits())
 
-    # TODO: listen to list of subreddits based on env config: https://github.com/Flexicon/grievousbot/blob/master/main.go#L40
-    subreddit = reddit.subreddit("flexicondev")
-
+    print("General Grievous standing by...")
     for comment in subreddit.stream.comments(skip_existing=True):
         process_comment(comment)
 
@@ -38,10 +37,12 @@ def process_comment(comment: models.Comment):
 
     if is_bot_reply(comment):
         # TODO: send a random reply comment: https://github.com/Flexicon/grievousbot/blob/master/bot.go#L20-L28
-        comment.reply("You dare address me directly, filth?!")
+        # comment.reply("You dare address me directly, filth?!")
+        pass
     else:
         # TODO: send the standard reply if comment is in "Hello There" format: https://github.com/Flexicon/grievousbot/blob/master/bot.go#L15-L16
-        comment.reply("Got you know, Jedi scum!")
+        # comment.reply("Got you know, Jedi scum!")
+        pass
 
 
 def is_bot_reply(comment: models.Comment):
@@ -51,6 +52,12 @@ def is_bot_reply(comment: models.Comment):
 
 def is_bot_comment(comment: models.Comment):
     return comment.author.id == bot_id
+
+
+def monitored_subreddits() -> str:
+    default = "flexicondev"
+    additional = os.getenv("SUBREDDITS")
+    return f"{default}+{additional}" if additional else default
 
 
 if __name__ == "__main__":
