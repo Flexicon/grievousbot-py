@@ -1,6 +1,7 @@
 import os
 import praw
 import sentry_sdk
+import random
 
 from praw import models
 from dotenv import load_dotenv
@@ -11,6 +12,16 @@ REQUIRED_ENV_VARS = [
     "CLIENT_ID",
     "CLIENT_PASSWORD",
     "USER_AGENT",
+]
+
+REPLY_QUOTES = [
+    "That wasn't much of a rescue.",
+    "I will deal with this Jedi slime myself.",
+    "Jedi slime - Your comment will make a fine addition to my collection!",
+    "Time to abandon ship.",
+    "Army or not, you must realize, you are doomed.",
+    "Your comment will make a fine addition to my collection!",
+    "Your lightsabers will make a fine addition to my collection!",
 ]
 
 load_dotenv()
@@ -38,12 +49,17 @@ def process_comment(comment: models.Comment):
     if is_bot_comment(comment):
         return
 
-    debug_print(f'received comment: [{comment}]\n"{comment.body}"\n')
+    debug_print(
+        "Received reply [%s] by [%s] - Link: https://reddit.com%s"
+        % (comment, comment.author.name, comment.permalink)
+    )
 
     if is_bot_reply(comment):
-        # TODO: send a random reply comment: https://github.com/Flexicon/grievousbot/blob/master/bot.go#L20-L28
-        # comment.reply("You dare address me directly, filth?!")
-        pass
+        new_reply = comment.reply(random.choice(REPLY_QUOTES))
+        print(
+            "Reply to [%s] sent successfully - Link: https://reddit.com%s"
+            % (comment, new_reply.permalink)
+        )
     else:
         # TODO: send the standard reply if comment is in "Hello There" format: https://github.com/Flexicon/grievousbot/blob/master/bot.go#L15-L16
         # comment.reply("Got you know, Jedi scum!")
