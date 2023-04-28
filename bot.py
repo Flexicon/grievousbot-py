@@ -31,6 +31,7 @@ REPLY_QUOTES = [
 
 
 def run_bot():
+    print("🔋 Powering up Grievous Bot...")
     reddit = praw.Reddit(
         client_id=os.getenv("CLIENT_ID"),
         client_secret=os.getenv("CLIENT_SECRET"),
@@ -40,7 +41,7 @@ def run_bot():
     )
     subreddit = reddit.subreddit(monitored_subreddits())
 
-    print("General Grievous standing by...")
+    print("🤖 General Grievous standing by...")
     for comment in subreddit.stream.comments(skip_existing=True):
         process_comment(comment)
 
@@ -94,6 +95,7 @@ def ensure_env_vars_present(vars: list[str]):
     for v in vars:
         if not os.getenv(v):
             raise Exception(f"Missing environment variable '{v}'")
+    print("✅ Environment verified")
 
 
 def setup_sentry():
@@ -109,6 +111,7 @@ def setup_sentry():
         traces_sample_rate=1.0,
         ignore_errors=[KeyboardInterrupt],
     )
+    print("🎯 Sentry setup")
 
 
 def app_env() -> str:
