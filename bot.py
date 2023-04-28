@@ -8,6 +8,9 @@ import sentry_sdk
 from praw import models
 from dotenv import load_dotenv
 
+# TODO: try to run bot in a background thread alongside a FastAPI server
+#       https://stackoverflow.com/a/70873984
+
 REQUIRED_ENV_VARS = [
     "CLIENT_ID",
     "CLIENT_SECRET",
@@ -122,6 +125,7 @@ def app_env() -> str:
 def debug_print(msg: str):
     if os.getenv("DEBUG") == "true":
         print(f"[DEBUG] {msg}")
+
 
 if __name__ == "__main__":
     try:
