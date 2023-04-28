@@ -32,8 +32,7 @@ def process_comment(comment: models.Comment):
     if is_bot_comment(comment):
         return
 
-    # TODO: make this a debug-like log
-    print(f'received comment: [{comment}]\n"{comment.body}"\n')
+    debug_print(f'received comment: [{comment}]\n"{comment.body}"\n')
 
     if is_bot_reply(comment):
         # TODO: send a random reply comment: https://github.com/Flexicon/grievousbot/blob/master/bot.go#L20-L28
@@ -58,6 +57,11 @@ def monitored_subreddits() -> str:
     default = "flexicondev"
     additional = os.getenv("SUBREDDITS")
     return f"{default}+{additional}" if additional else default
+
+
+def debug_print(msg: str):
+    if os.getenv("DEBUG") == "true":
+        print(f"[DEBUG] {msg}")
 
 
 if __name__ == "__main__":
