@@ -9,9 +9,10 @@ from praw import models
 from dotenv import load_dotenv
 
 REQUIRED_ENV_VARS = [
-    "CLIENT_USERNAME",
-    "CLIENT_SECRET",
     "CLIENT_ID",
+    "CLIENT_SECRET",
+    "CLIENT_BOT_ID",
+    "CLIENT_USERNAME",
     "CLIENT_PASSWORD",
     "USER_AGENT",
 ]
@@ -27,8 +28,6 @@ REPLY_QUOTES = [
     "Your comment will make a fine addition to my collection!",
     "Your lightsabers will make a fine addition to my collection!",
 ]
-
-load_dotenv()
 
 
 def run_bot():
@@ -124,6 +123,7 @@ def debug_print(msg: str):
 
 if __name__ == "__main__":
     try:
+        load_dotenv()
         ensure_env_vars_present(REQUIRED_ENV_VARS)
         setup_sentry()
         run_bot()
