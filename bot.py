@@ -4,9 +4,16 @@ import praw
 from praw import models
 from dotenv import load_dotenv
 
+REQUIRED_ENV_VARS = [
+    "CLIENT_USERNAME",
+    "CLIENT_SECRET",
+    "CLIENT_ID",
+    "CLIENT_PASSWORD",
+    "USER_AGENT",
+]
+
 load_dotenv()
 
-# TODO: ensure environment variables are set: https://github.com/Flexicon/grievousbot/blob/master/main.go#L18-L22
 # TODO: setup sentry: https://github.com/Flexicon/grievousbot/blob/master/main.go#L104
 
 ua = os.getenv("USER_AGENT")
@@ -59,10 +66,17 @@ def monitored_subreddits() -> str:
     return f"{default}+{additional}" if additional else default
 
 
+def ensure_env_vars_present(vars: list[str]):
+    for v in vars:
+        if not os.getenv(v):
+            raise Exception(f"Missing environment variable '{v}'")
+
+
 def debug_print(msg: str):
     if os.getenv("DEBUG") == "true":
         print(f"[DEBUG] {msg}")
 
 
 if __name__ == "__main__":
+    ensure_env_vars_present(REQUIRED_ENV_VARS)
     run_bot()
