@@ -1,5 +1,0 @@
-.git
-.github
-.pytest_cache
-venv/
-.env
