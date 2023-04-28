@@ -2,6 +2,7 @@ import os
 import praw
 import sentry_sdk
 import random
+import re
 
 from praw import models
 from dotenv import load_dotenv
@@ -14,6 +15,8 @@ REQUIRED_ENV_VARS = [
     "USER_AGENT",
 ]
 
+HELLO_THERE_MSG = "General Kenobi. You are a bold one."
+HELLO_THERE_PATTERN = "^(hello there)[!]*$"
 REPLY_QUOTES = [
     "That wasn't much of a rescue.",
     "I will deal with this Jedi slime myself.",
@@ -50,29 +53,38 @@ def process_comment(comment: models.Comment):
         return
 
     debug_print(
-        "Received reply [%s] by [%s] - Link: https://reddit.com%s"
+        "Received comment [%s] by [%s] - Link: https://reddit.com%s"
         % (comment, comment.author.name, comment.permalink)
     )
 
     if is_bot_reply(comment):
         new_reply = comment.reply(random.choice(REPLY_QUOTES))
-        print(
-            "Reply to [%s] sent successfully - Link: https://reddit.com%s"
-            % (comment, new_reply.permalink)
-        )
+        print_reply_successful(comment, new_reply)
+    elif is_hello_comment(comment):
+        new_reply = comment.reply(HELLO_THERE_MSG)
+        print_reply_successful(comment, new_reply)
     else:
-        # TODO: send the standard reply if comment is in "Hello There" format: https://github.com/Flexicon/grievousbot/blob/master/bot.go#L15-L16
-        # comment.reply("Got you know, Jedi scum!")
-        pass
+        debug_print("Comment [%s] did not match any pattern - moving on" % (comment))
 
 
-def is_bot_reply(comment: models.Comment):
+def is_bot_reply(comment: models.Comment) -> bool:
     parent = comment.parent()
     return isinstance(parent, models.Comment) and is_bot_comment(parent)
 
 
-def is_bot_comment(comment: models.Comment):
+def is_bot_comment(comment: models.Comment) -> bool:
     return comment.author.id == bot_id
+
+
+def is_hello_comment(comment: models.Comment) -> bool:
+    return bool(re.match(HELLO_THERE_PATTERN, comment.body))
+
+
+def print_reply_successful(original_comment: models.Comment, reply: models.Comment):
+    print(
+        "Reply to [%s] sent successfully - Link: https://reddit.com%s"
+        % (original_comment, reply.permalink)
+    )
 
 
 def monitored_subreddits() -> str:
