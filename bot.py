@@ -1,12 +1,9 @@
 import os
 import random
 import re
-import sys
 
-import praw
 import sentry_sdk
-from praw import models
-from dotenv import load_dotenv
+from asyncpraw import Reddit, models
 
 REQUIRED_ENV_VARS = [
     "CLIENT_ID",
@@ -31,23 +28,27 @@ REPLY_QUOTES = [
 ]
 
 
-def run_bot():
+async def run_bot():
     print("🔋 Powering up Grievous Bot...")
-    reddit = praw.Reddit(
+    async with reddit_client() as reddit:
+        subreddits = await reddit.subreddit(monitored_subreddits())
+
+        print("🤖 General Grievous standing by...")
+        async for comment in subreddits.stream.comments(skip_existing=True):
+            await process_comment(comment)
+
+
+def reddit_client() -> Reddit:
+    return Reddit(
         client_id=os.getenv("CLIENT_ID"),
         client_secret=os.getenv("CLIENT_SECRET"),
         password=os.getenv("CLIENT_PASSWORD"),
         user_agent=os.getenv("USER_AGENT"),
         username=os.getenv("CLIENT_USERNAME"),
     )
-    subreddit = reddit.subreddit(monitored_subreddits())
-
-    print("🤖 General Grievous standing by...")
-    for comment in subreddit.stream.comments(skip_existing=True):
-        process_comment(comment)
 
 
-def process_comment(comment: models.Comment):
+async def process_comment(comment: models.Comment):
     if is_bot_comment(comment):
         return
 
@@ -57,12 +58,12 @@ def process_comment(comment: models.Comment):
     )
 
     if is_bot_reply(comment):
-        new_reply = comment.reply(random.choice(REPLY_QUOTES))
+        new_reply = await comment.reply(random.choice(REPLY_QUOTES))
 
         if new_reply:
             print_reply_successful(comment, new_reply)
     elif is_hello_comment(comment):
-        new_reply = comment.reply(HELLO_THERE_MSG)
+        new_reply = await comment.reply(HELLO_THERE_MSG)
 
         if new_reply:
             print_reply_successful(comment, new_reply)
@@ -127,14 +128,3 @@ def app_env() -> str:
 def debug_print(msg: str):
     if os.getenv("DEBUG") == "true":
         print(f"[DEBUG] {msg}")
-
-
-if __name__ == "__main__":
-    try:
-        load_dotenv()
-        ensure_env_vars_present()
-        setup_sentry()
-        run_bot()
-    except KeyboardInterrupt:
-        print("\nInterrupted - shutting down")
-        sys.exit(130)
