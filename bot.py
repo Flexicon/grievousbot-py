@@ -15,6 +15,7 @@ REQUIRED_ENV_VARS = [
     "CLIENT_USERNAME",
     "CLIENT_PASSWORD",
     "USER_AGENT",
+    "SUBREDDITS",
 ]
 
 HELLO_THERE_MSG = "General Kenobi. You are a bold one."
