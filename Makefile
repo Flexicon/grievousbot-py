@@ -7,4 +7,4 @@ dev:
 	@echo "\n--------------------------------------------------------------------\n\nRun:\n. ./venv/bin/activate\n"
 
 bot:
-	uvicorn server:app --host=0.0.0.0 --reload
+	uvicorn server:app --host=0.0.0.0 --log-level critical --reload
