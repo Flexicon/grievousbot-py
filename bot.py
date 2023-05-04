@@ -57,7 +57,7 @@ async def process_comment(comment: models.Comment):
         % (comment, comment.author.name, comment.permalink)
     )
 
-    if is_bot_reply(comment):
+    if await is_bot_reply(comment):
         new_reply = await comment.reply(random.choice(REPLY_QUOTES))
 
         if new_reply:
@@ -71,13 +71,14 @@ async def process_comment(comment: models.Comment):
         debug_print("Comment [%s] did not match any pattern - moving on" % (comment))
 
 
-def is_bot_reply(comment: models.Comment) -> bool:
-    parent = comment.parent()
-    return isinstance(parent, models.Comment) and is_bot_comment(parent)
+async def is_bot_reply(comment: models.Comment) -> bool:
+    parent = await comment.parent()
+    bot_comment = await is_bot_comment(parent)
+    return isinstance(parent, models.Comment) and bot_comment
 
 
-def is_bot_comment(comment: models.Comment) -> bool:
-    return comment.author.id == os.getenv("CLIENT_BOT_ID")
+async def is_bot_comment(comment: models.Comment) -> bool:
+    return (await comment.author).id == os.getenv("CLIENT_BOT_ID")
 
 
 def is_hello_comment(comment: models.Comment) -> bool:
