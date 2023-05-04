@@ -92,8 +92,8 @@ def print_reply_successful(original_comment: models.Comment, reply: models.Comme
 
 def monitored_subreddits() -> str:
     default = "flexicondev"
-    additional = os.getenv("SUBREDDITS")
-    return f"{default}+{additional}" if additional else default
+    configured = os.getenv("SUBREDDITS")
+    return configured if configured else default
 
 
 def ensure_env_vars_present():
