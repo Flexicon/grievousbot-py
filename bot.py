@@ -8,9 +8,6 @@ import sentry_sdk
 from praw import models
 from dotenv import load_dotenv
 
-# TODO: try to run bot in a background thread alongside a FastAPI server
-#       https://stackoverflow.com/a/70873984
-
 REQUIRED_ENV_VARS = [
     "CLIENT_ID",
     "CLIENT_SECRET",
@@ -60,10 +57,14 @@ def process_comment(comment: models.Comment):
 
     if is_bot_reply(comment):
         new_reply = comment.reply(random.choice(REPLY_QUOTES))
-        print_reply_successful(comment, new_reply)
+
+        if new_reply:
+            print_reply_successful(comment, new_reply)
     elif is_hello_comment(comment):
         new_reply = comment.reply(HELLO_THERE_MSG)
-        print_reply_successful(comment, new_reply)
+
+        if new_reply:
+            print_reply_successful(comment, new_reply)
     else:
         debug_print("Comment [%s] did not match any pattern - moving on" % (comment))
 
@@ -94,8 +95,8 @@ def monitored_subreddits() -> str:
     return f"{default}+{additional}" if additional else default
 
 
-def ensure_env_vars_present(vars: list[str]):
-    for v in vars:
+def ensure_env_vars_present():
+    for v in REQUIRED_ENV_VARS:
         if not os.getenv(v):
             raise Exception(f"Missing environment variable '{v}'")
     print("✅ Environment verified")
@@ -130,7 +131,7 @@ def debug_print(msg: str):
 if __name__ == "__main__":
     try:
         load_dotenv()
-        ensure_env_vars_present(REQUIRED_ENV_VARS)
+        ensure_env_vars_present()
         setup_sentry()
         run_bot()
     except KeyboardInterrupt:
