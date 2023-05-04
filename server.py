@@ -4,7 +4,7 @@ from fastapi import FastAPI, Response
 from contextlib import asynccontextmanager
 import asyncio
 
-from bot import ensure_env_vars_present, run_bot
+from bot import ensure_env_vars_present, run_bot, setup_sentry
 
 
 @asynccontextmanager
@@ -15,6 +15,7 @@ async def lifespan(app: FastAPI):
 
 load_dotenv()
 ensure_env_vars_present()
+setup_sentry()
 
 app = FastAPI(lifespan=lifespan)
 
