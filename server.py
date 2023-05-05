@@ -1,4 +1,5 @@
 import os
+import sys
 from dotenv import load_dotenv
 from fastapi import FastAPI, Response
 from contextlib import asynccontextmanager
@@ -7,9 +8,22 @@ import asyncio
 from bot import ensure_env_vars_present, run_bot, setup_sentry
 
 
+async def kickstart_bot(count: int = 1):
+    try:
+        await run_bot()
+    except Exception as e:
+        print(f"❌ Bot crashed: {e}")
+        if count > 5:
+            sys.exit(1)
+
+        print("🪫 Reloading Grievous Bot in 5s...")
+        await asyncio.sleep(5)
+        await kickstart_bot(count + 1)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    asyncio.create_task(run_bot())
+    asyncio.create_task(kickstart_bot())
     yield
 
 
