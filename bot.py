@@ -31,12 +31,12 @@ REPLY_QUOTES = [
 
 def run_bot():
     print("🔋 Powering up Grievous Bot...")
-    with reddit_client() as reddit:
-        subreddits = reddit.subreddit(monitored_subreddits())
+    reddit = reddit_client()
+    subreddits = reddit.subreddit(monitored_subreddits())
 
-        print("🤖 General Grievous standing by...")
-        for comment in subreddits.stream.comments(skip_existing=True):
-            process_comment(comment)
+    print("🤖 General Grievous standing by...")
+    for comment in subreddits.stream.comments(skip_existing=True):
+        process_comment(comment)
 
 
 def reddit_client() -> Reddit:
@@ -79,12 +79,11 @@ def is_bot_reply(comment: models.Comment) -> bool:
 
 
 def is_bot_comment(comment: models.Comment) -> bool:
-    comment.author.load()
     return comment.author.id == os.getenv("CLIENT_BOT_ID")
 
 
 def is_hello_comment(comment: models.Comment) -> bool:
-    return bool(re.match(HELLO_THERE_PATTERN, comment.body))
+    return bool(re.match(HELLO_THERE_PATTERN, comment.body, re.IGNORECASE))
 
 
 def print_reply_successful(original_comment: models.Comment, reply: models.Comment):
