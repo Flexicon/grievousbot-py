@@ -3,7 +3,8 @@ import random
 import re
 
 import sentry_sdk
-from asyncpraw import Reddit, models
+from dotenv import load_dotenv
+from praw import Reddit, models
 
 REQUIRED_ENV_VARS = [
     "CLIENT_ID",
@@ -28,14 +29,14 @@ REPLY_QUOTES = [
 ]
 
 
-async def run_bot():
+def run_bot():
     print("🔋 Powering up Grievous Bot...")
-    async with reddit_client() as reddit:
-        subreddits = await reddit.subreddit(monitored_subreddits())
+    with reddit_client() as reddit:
+        subreddits = reddit.subreddit(monitored_subreddits())
 
         print("🤖 General Grievous standing by...")
-        async for comment in subreddits.stream.comments(skip_existing=True):
-            await process_comment(comment)
+        for comment in subreddits.stream.comments(skip_existing=True):
+            process_comment(comment)
 
 
 def reddit_client() -> Reddit:
@@ -48,8 +49,8 @@ def reddit_client() -> Reddit:
     )
 
 
-async def process_comment(comment: models.Comment):
-    if await is_bot_comment(comment):
+def process_comment(comment: models.Comment):
+    if is_bot_comment(comment):
         return
 
     debug_print(
@@ -57,13 +58,13 @@ async def process_comment(comment: models.Comment):
         % (comment, comment.author.name, comment.permalink)
     )
 
-    if await is_bot_reply(comment):
-        new_reply = await comment.reply(random.choice(REPLY_QUOTES))
+    if is_bot_reply(comment):
+        new_reply = comment.reply(random.choice(REPLY_QUOTES))
 
         if new_reply:
             print_reply_successful(comment, new_reply)
     elif is_hello_comment(comment):
-        new_reply = await comment.reply(HELLO_THERE_MSG)
+        new_reply = comment.reply(HELLO_THERE_MSG)
 
         if new_reply:
             print_reply_successful(comment, new_reply)
@@ -71,15 +72,14 @@ async def process_comment(comment: models.Comment):
         debug_print("Comment [%s] did not match any pattern - moving on" % (comment))
 
 
-async def is_bot_reply(comment: models.Comment) -> bool:
-    parent = await comment.parent()
-    await parent.load()
-    bot_comment = await is_bot_comment(parent)
+def is_bot_reply(comment: models.Comment) -> bool:
+    parent = comment.parent()
+    bot_comment = is_bot_comment(parent)
     return isinstance(parent, models.Comment) and bot_comment
 
 
-async def is_bot_comment(comment: models.Comment) -> bool:
-    await comment.author.load()
+def is_bot_comment(comment: models.Comment) -> bool:
+    comment.author.load()
     return comment.author.id == os.getenv("CLIENT_BOT_ID")
 
 
@@ -128,6 +128,27 @@ def app_env() -> str:
     return env if env else "development"
 
 
+def check_debug_mode():
+    if is_debug():
+        print("🐞 Debug mode enabled")
+
+
+def is_debug() -> bool:
+    return os.getenv("DEBUG") == "true"
+
+
 def debug_print(msg: str):
-    if os.getenv("DEBUG") == "true":
+    if is_debug():
         print(f"[DEBUG] {msg}")
+
+
+if __name__ == "__main__":
+    load_dotenv()
+    ensure_env_vars_present()
+    setup_sentry()
+    check_debug_mode()
+
+    try:
+        run_bot()
+    except KeyboardInterrupt:
+        print("\n😴 Shutting down")
