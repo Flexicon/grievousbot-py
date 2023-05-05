@@ -108,7 +108,7 @@ def ensure_env_vars_present():
 def setup_sentry():
     dsn = os.getenv("SENTRY_DSN")
     if not dsn:
-        print("Skipping Sentry setup - SENTRY_DSN is not set")
+        print("🤷 Skipping Sentry setup - SENTRY_DSN is not set")
         return
 
     sentry_sdk.init(
