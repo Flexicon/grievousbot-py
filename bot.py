@@ -74,12 +74,14 @@ def process_comment(comment: models.Comment):
 
 def is_bot_reply(comment: models.Comment) -> bool:
     parent = comment.parent()
-    bot_comment = is_bot_comment(parent)
-    return isinstance(parent, models.Comment) and bot_comment
+    return isinstance(parent, models.Comment) and is_bot_comment(parent)
 
 
 def is_bot_comment(comment: models.Comment) -> bool:
-    return comment.author.id == os.getenv("CLIENT_BOT_ID")
+    try:
+        return comment.author.id == os.getenv("CLIENT_BOT_ID")
+    except:
+        return False
 
 
 def is_hello_comment(comment: models.Comment) -> bool:
