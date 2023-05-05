@@ -73,12 +73,14 @@ async def process_comment(comment: models.Comment):
 
 async def is_bot_reply(comment: models.Comment) -> bool:
     parent = await comment.parent()
+    await parent.load()
     bot_comment = await is_bot_comment(parent)
     return isinstance(parent, models.Comment) and bot_comment
 
 
 async def is_bot_comment(comment: models.Comment) -> bool:
-    return (await comment.author).id == os.getenv("CLIENT_BOT_ID")
+    await comment.author.load()
+    return comment.author.id == os.getenv("CLIENT_BOT_ID")
 
 
 def is_hello_comment(comment: models.Comment) -> bool:

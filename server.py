@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 from dotenv import load_dotenv
@@ -8,13 +9,16 @@ import asyncio
 
 from bot import ensure_env_vars_present, run_bot, setup_sentry
 
+logger = logging.getLogger()
+
 
 async def kickstart_bot(count: int = 1):
     try:
         await run_bot()
     except Exception as e:
-        capture_exception(e)
         print(f"❌ Bot crashed: {e}")
+        logger.exception(e)
+        capture_exception(e)
         if count > 5:
             sys.exit(1)
 
