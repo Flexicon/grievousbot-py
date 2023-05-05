@@ -49,7 +49,7 @@ def reddit_client() -> Reddit:
 
 
 async def process_comment(comment: models.Comment):
-    if is_bot_comment(comment):
+    if await is_bot_comment(comment):
         return
 
     debug_print(
